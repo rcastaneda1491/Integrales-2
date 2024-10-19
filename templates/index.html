@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integración y Gráfica</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding-right: 20px;
+            padding-left: 20px;
+            padding-bottom: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #c2c2d4;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #3c4992;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2e376d;
+        }
+
+        h2 {
+            margin-bottom: 0;
+        }
+
+        #plotContainer {
+            max-width: 100%;
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+            }
+
+            form input,
+            form button {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Integrales definidas e indefinidas</h1>
+    <div class="container">
+        <form id="integralForm">
+            <label for="tipo_integral">Tipo de Integral:</label>
+            <select id="tipo_integral" name="tipo_integral" required>
+                <option value="definida">Definida</option>
+                <option value="indefinida">Indefinida</option>
+            </select>
+            <label for="funcion">Función en términos de x (por ejemplo, x**2 + sin(x)):</label>
+            <input type="text" id="funcion" name="funcion" required>
+
+            <div id="limites">
+                <label for="a">Límite inferior:</label>
+                <input type="text" id="a" name="a">
+
+                <label for="b">Límite superior:</label>
+                <input type="text" id="b" name="b">
+            </div>
+
+            <button type="submit">Calcular</button>
+        </form>
+
+        <div id="plotContainer">
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            //Validar tipo de integral
+            $('#tipo_integral').change(function () {
+                if ($(this).val() === 'indefinida') {
+                    $('#limites').hide();
+                    $('#a').prop('required', false);
+                    $('#b').prop('required', false);
+                } else {
+                    $('#limites').show();
+                    $('#a').prop('required', true);
+                    $('#b').prop('required', true);
+                }
+            });
+
+            $('#limites').show();
+            $('#a').prop('required', true);
+            $('#b').prop('required', true);
+
+            $("#integralForm").submit(function (event) {
+                event.preventDefault();
+
+                $.ajax({
+                    url: '/plot',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        if ($('#tipo_integral').val() === 'definida') {
+                            //integral definida
+                            $('#plotContainer').html('<img src="/plot.png" alt="Gráfica de la Integral">');
+                        } else {
+                            //Integral indefinida
+                            $('#plotContainer').html(response);
+                            //Renderiza
+                            MathJax.Hub.Queue(["Typeset", MathJax.Hub, "plotContainer"]);
+                        }
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+
+</html>
