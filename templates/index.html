@@ -33,7 +33,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        form {
+        div form {
             margin: 0 auto;
         }
 
@@ -145,26 +145,31 @@
             $('#a').prop('required', true);
             $('#b').prop('required', true);
 
+            // Interceptar el envío del formulario con AJAX
             $("#integralForm").submit(function (event) {
-                event.preventDefault();
-
+                event.preventDefault();  // Evita que el formulario se envíe de manera tradicional
+                $('#plotContainer').empty();
+                // Enviar los datos del formulario usando AJAX
                 $.ajax({
                     url: '/plot',
                     type: 'POST',
                     data: $(this).serialize(),
                     success: function (response) {
                         if ($('#tipo_integral').val() === 'definida') {
-                            //integral definida
-                            $('#plotContainer').html('<img src="/plot.png" alt="Gráfica de la Integral">');
+                            // Si es una integral definida, cargamos la imagen de la gráfica
+                            // Añadir un parámetro aleatorio para evitar el caché de la imagen
+                            let randomParam = new Date().getTime();
+                            $('#plotContainer').html('<img src="/plot.png?rand=' + randomParam + '" alt="Gráfica de la Integral">');
                         } else {
-                            //Integral indefinida
+                            // Si es una integral indefinida, mostramos el resultado simbólico
                             $('#plotContainer').html(response);
-                            //Renderiza
+                            // Volver a procesar MathJax para renderizar LaTeX
                             MathJax.Hub.Queue(["Typeset", MathJax.Hub, "plotContainer"]);
                         }
                     }
                 });
             });
+
 
         });
     </script>

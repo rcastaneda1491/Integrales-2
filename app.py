@@ -13,8 +13,14 @@ funcion_str_global = None
 a_global = None
 b_global = None
 
+def esImpar(funcion):
+    return sp.simplify(funcion.subs(x, -x)) == -funcion
+
 def integrar_definida(funcion, a, b):
-    integral_definida = sp.integrate(sp.Abs(funcion), (x, a, b))
+    if esImpar(funcion):
+        integral_definida = sp.integrate(sp.Abs(funcion), (x, a, b)).evalf()
+    else:
+        integral_definida = sp.integrate(funcion, (x, a, b)).evalf()
 
     funcion_numerica = sp.lambdify(x, funcion, "numpy")
 
@@ -77,14 +83,21 @@ def plot_post():
         #Permitir LaTeX en el HTML
         return Markup(result_html)
 
+# Ruta para devolver la imagen de la gráfica
 @app.route('/plot.png')
 def plot_png():
     if funcion_str_global and a_global is not None and b_global is not None:
+        # Simbolizar la función
         funcion = sp.sympify(funcion_str_global)
+
+        # Generar la gráfica
         img = integrar_definida(funcion, a_global, b_global)
+        
+        # Devolver la imagen como respuesta
         return Response(img.getvalue(), mimetype='image/png')
     else:
         return "Error: No se ha proporcionado una función o límites válidos.", 400
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    app.run(debug=True)
